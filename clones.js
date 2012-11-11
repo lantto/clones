@@ -14,6 +14,17 @@ Game = {
 		for (var i = 0; i < this.entities.length; i++) {
 			if (this.entities[i] == entity) this.entities.splice(i, 1);
 		}
+	},
+	
+ 	checkCollisions: function() {
+		for (i=0; i<this.entities.length; i++) {
+			for (j=i+1; j<this.entities.length; j++) {
+				if ((this.entities[i].x >= this.entities[j].x - this.entities[i].size && this.entities[i].x <= this.entities[j].x + this.entities[j].size) && (this.entities[i].y >= this.entities[j].y - this.entities[i].size && this.entities[i].y <= this.entities[j].y + this.entities[j].size)) {
+					this.entities[i].collide(this.entities[j]);
+					this.entities[j].collide(this.entities[i]);
+				}
+			}
+		}
 	}
 }
 
@@ -25,11 +36,6 @@ function Entity(x, y) {
 	this.xDirection = 1;
 	this.yDirection = 1;
 	
-	this.update = function() {
-		this.x += this.speed * this.xDirection;
-		this.y += this.speed * this.yDirection;
-	}
-	
 	this.draw = function() {
 		ctx.fillStyle = this.color;
 		ctx.fillRect(this.x, this.y, this.size, this.size);
@@ -38,6 +44,15 @@ function Entity(x, y) {
 	this.kill = function() {
 		Game.removeEntity(this);
 	}
+
+	this.collide = function(entity) {
+		// default is no action
+	}
+}
+
+Entity.prototype.update = function() {
+	this.x += this.speed * this.xDirection;
+	this.y += this.speed * this.yDirection;
 }
 
 // Game objects (entities)
@@ -65,6 +80,20 @@ function Clone() {
 	this.hp = 100;
 	this.size = 10;
 	
+	this.update = function () {
+		this.checkCollisions();
+		Entity.prototype.update.call(this);
+	}
+	
+	this.checkCollisions = function () {
+		for (i=0; i<Game.entities.length; i++) {
+			if ((this.x >= Game.entities[i].x - this.size && this.x <= Game.entities[i].x + Game.entities[i].size) && (this.y >= Game.entities[i].y - this.size && this.y <= Game.entities[i].y + Game.entities[i].size)) {
+				if (Game.entities[i] !== this) {
+					// COLLISION
+				}
+			}
+		}
+	}
 }
 
 Clone.prototype = new Entity;
