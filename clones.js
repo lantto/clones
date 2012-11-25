@@ -4,12 +4,35 @@ function randomFromTo(from, to) {
 	return Math.floor(Math.random() * (to - from + 1) + from);
 }
 
+function relMouseCoords(event) {
+    var totalOffsetX = 0;
+    var totalOffsetY = 0;
+    var canvasX = 0;
+    var canvasY = 0;
+    var currentElement = this;
+
+    do {
+        totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
+        totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
+    } while(currentElement = currentElement.offsetParent);
+
+    canvasX = event.pageX - totalOffsetX;
+    canvasY = event.pageY - totalOffsetY;
+
+    return { x:canvasX, y:canvasY }
+}
+
+HTMLCanvasElement.prototype.relMouseCoords = relMouseCoords;
+
 // Framework
 
 Game = {
 	global: window,
 	entities: new Array(),
 	area: {width: 0, height: 0},
+	clones: 0,
+	
+	overlay: {opacity: 0, color: '#000'},
 	
 	spawnEntity: function(type, x, y, velX, velY, shape, color, face) {
 		var entity = new type(x, y, velX, velY, shape, color, face);
@@ -43,10 +66,17 @@ function Entity(x, y, velX, velY, shape, color, face) {
 	this.color = color;
 	this.face = face;
 	
+	this.opacity = 1;
+	this.opacityModifier = 0;
+	
 	this.velocity = {x: velX, y: velY};
 	
 	this.draw = function() {
-	
+		
+		// ctx.save();
+		
+		ctx.globalAlpha = this.opacity;
+		
 		ctx.fillStyle = this.color;
 		ctx.strokeStyle = '#000';
 		
@@ -124,10 +154,8 @@ function Entity(x, y, velX, velY, shape, color, face) {
 				ctx.stroke();
 				break;
 		}
-	}
-	
-	this.kill = function() {
-		Game.removeEntity(this);
+		
+		// ctx.restore();
 	}
 
 	this.collide = function(entity) {
@@ -153,6 +181,20 @@ Entity.prototype.update = function() {
 	} else if (this.y <= 0) {
 		this.y = 0;
 		this.velocity.y *= -1;
+	}
+	
+	this.opacity -= this.opacityModifier;
+	
+	if (this.opacity <= 0) {
+		Game.removeEntity(this);
+	}
+}
+
+Entity.prototype.kill = function(slow) {
+	if (slow) {
+		this.opacityModifier = 0.009;
+	} else {
+		this.opacityModifier = 0.1;
 	}
 }
 
@@ -180,12 +222,16 @@ function Clone() {
 	this.speed = 4;
 	
 	this.update = function () {
-		this.checkCollisions();
+		if (Math.random() > 0.995) {
+			this.checkCollisions();
+		}	
+		
 		if (Math.random() > 0.999) {
 			var velX = this.velocity.x * -1;
 			var velY = this.velocity.y * -1;
 			Game.spawnEntity(Clone, this.x, this.y, velX, velY, this.shape, this.color, this.face);
-			console.log('Cloned!');
+			Game.clones++;
+			score.innerHTML = Game.clones;
 		}					
 		Entity.prototype.update.call(this);
 	}
@@ -193,11 +239,18 @@ function Clone() {
 	this.checkCollisions = function () {
 		for (i=0; i<Game.entities.length; i++) {
 			if ((this.x >= Game.entities[i].x - this.size && this.x <= Game.entities[i].x + Game.entities[i].size) && (this.y >= Game.entities[i].y - this.size && this.y <= Game.entities[i].y + Game.entities[i].size)) {
-				if (Game.entities[i] !== this) {
-					// COLLISION
+				if (Game.entities[i] !== this && Game.entities[i] instanceof Human) {
+					Game.entities[i].kill(true);
+					break;
 				}
 			}
 		}
+	}
+	
+	this.kill = function(slow) {
+		Game.clones--;
+		score.innerHTML = Game.clones;
+		Entity.prototype.kill.call(this);
 	}
 }
 
@@ -211,13 +264,20 @@ var ctx;
 var gradientSpan = 0;
 var gradientIncrease = 0.001;
 
+var score;
+
 function init() {
 
 	canvas = document.getElementById('canvas');
 	ctx = canvas.getContext('2d');
 	
+	score =  document.getElementById('score');
+	
 	Game.area.width = canvas.width;
 	Game.area.height = canvas.height;
+	Game.clones = 3;
+	
+	score.innerHTML = Game.clones;
 	
 	var colors = new Array();
 	colors[0] = "#6FBF4D";
@@ -252,19 +312,37 @@ function init() {
 				}
 			}
 		} while (duplicate);
-		if (i<3) {
+		if (i<Game.clones) {
 			Game.spawnEntity(Clone, x, y, velX, velY, shape, colors[color], face);
 		} else {
 			Game.spawnEntity(Human, x, y, velX, velY, shape, colors[color], face);
 		}
 	}
+	
+    canvas.addEventListener('click', function(e) {
+		coords = canvas.relMouseCoords(e);
+		canvasX = coords.x;
+		canvasY = coords.y;
+		for (i=Game.entities.length-1; i>=0; i--) {
+			if ((coords.x >= Game.entities[i].x && coords.x <= Game.entities[i].x + Game.entities[i].size) && (coords.y >= Game.entities[i].y && coords.y <= Game.entities[i].y + Game.entities[i].size)) {
+				Game.entities[i].kill();
+				if (Game.entities[i] instanceof Human) {
+					Game.overlay.color = 'red';
+					Game.overlay.opacity = 1;
+				}
+				
+				break;
+			}
+		}
+    }, false);
 
 	setInterval(main, 1000 / fps);
 
 }
 
 function main() {
-	gradientSpan += gradientIncrease;
+	gradientSpan = 0.8;
+	/* gradientSpan += gradientIncrease;
 	
 	if (gradientSpan >= 1) {
 		gradientSpan = 1;
@@ -272,7 +350,9 @@ function main() {
 	} else if (gradientSpan <= 0) {
 		gradientSpan = 0;
 		gradientIncrease *= -1;
-	}
+	} */
+	
+	ctx.globalAlpha = 1;
 	
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
@@ -282,6 +362,16 @@ function main() {
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	update();
 	render();
+	
+	if (Game.overlay.opacity > 0) {
+		Game.overlay.opacity -= 0.005;
+		if (Game.overlay.opacity < 0) {
+			Game.overlay.opacity = 0;
+		}
+		ctx.fillStyle = Game.overlay.color;
+		ctx.globalAlpha = Game.overlay.opacity;
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+	}
 }
 
 function update() {
