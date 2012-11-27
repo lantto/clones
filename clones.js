@@ -34,8 +34,8 @@ Game = {
 	
 	overlay: {opacity: 0, color: '#000'},
 	
-	spawnEntity: function(type, x, y, velX, velY, shape, color, face) {
-		var entity = new type(x, y, velX, velY, shape, color, face);
+	spawnEntity: function(type, x, y, velX, velY, head, leftShoulder, rightShoulder) {
+		var entity = new type(x, y, velX, velY, head, leftShoulder, rightShoulder);
 		this.entities.push(entity);
 		return entity;
 	},
@@ -58,104 +58,65 @@ Game = {
 	}
 }
 
-function Entity(x, y, velX, velY, shape, color, face) {
+function Entity(x, y, velX, velY, head, leftShoulder, rightShoulder) {
 
 	this.x = x;
 	this.y = y;
-	this.shape = shape;
-	this.color = color;
-	this.face = face;
+	
+	this.size = 40;
+	this.spriteSize = 80;
+	
+	this.head = head;
+	this.leftShoulder = leftShoulder;
+	this.rightShoulder = rightShoulder;
 	
 	this.opacity = 1;
 	this.opacityModifier = 0;
 	
 	this.velocity = {x: velX, y: velY};
 	
+	/* this.timeBetweenFrames = 1/fps;
+	this.timeSinceLastFrame = this.timeBetweenFrames; */
+	
+	this.animation = [0, 1, 2, 1, 0, 3, 4, 3];
+	this.ticker = 0;
+	this.currentFrame = 0;
+	
+	this.angle = 0;
+	
 	this.draw = function() {
 		
 		// ctx.save();
+		this.ticker++;
+		if (this.ticker > 5) {
+			this.currentFrame++;
+			this.ticker = 0;
+			if (this.currentFrame >= this.animation.length) {
+				this.currentFrame = 0;
+			}
+		}
+		
+		ctx.save();
+		
+		ctx.translate(this.x + this.size/2, this.y + this.size/2);
+		
+		// this.angle = this.velocity.x 
+
+		
+		// ctx.rotate(this.velocity.x / this.velocity.y * -1);
+		this.angle = (Math.atan2(this.velocity.y, this.velocity.x)) * 180 / Math.PI - 90;
+		ctx.rotate(this.angle * Math.PI / 180);
 		
 		ctx.globalAlpha = this.opacity;
 		
-		ctx.fillStyle = this.color;
-		ctx.strokeStyle = '#000';
+		var xy = -(this.spriteSize/2);
 		
-		switch(this.shape) {
-			case 1:
-				ctx.fillRect(this.x, this.y, this.size, this.size);
-				ctx.strokeRect(this.x, this.y, this.size, this.size);
-				break;
-			case 2:
-				ctx.beginPath();
-				ctx.moveTo(this.x + this.size/3, this.y);
-				ctx.lineTo(this.x + this.size/3*2, this.y);
-				ctx.lineTo(this.x + this.size, this.y + this.size/3);
-				ctx.lineTo(this.x + this.size, this.y + this.size/3*2);
-				ctx.lineTo(this.x + this.size/3*2, this.y + this.size);
-				ctx.lineTo(this.x + this.size/3, this.y + this.size);
-				ctx.lineTo(this.x, this.y + this.size/3*2);
-				ctx.lineTo(this.x, this.y + this.size/3);
-				ctx.closePath();
-				ctx.fill();
-				ctx.stroke();
-				break;
-			case 3:
-				ctx.beginPath();
-				ctx.arc(this.x+this.size/2, this.y+this.size/2, this.size/2, 0, Math.PI*2, true);
-				ctx.closePath();
-				ctx.fill();
-				ctx.stroke();
-				break;
-			case 4:
-				ctx.beginPath();
-				ctx.moveTo(this.x + this.size/2, this.y);
-				ctx.lineTo(this.x + this.size, this.y + this.size/2);
-				ctx.lineTo(this.x + this.size/2, this.y + this.size);
-				ctx.lineTo(this.x, this.y + this.size/2);
-				ctx.closePath();
-				ctx.fill();
-				ctx.stroke();
-				break;
-			case 5:
-				ctx.beginPath();
-				ctx.moveTo(this.x, this.y);
-				ctx.lineTo(this.x + this.size - 10, this.y + 10);
-				ctx.lineTo(this.x + this.size, this.y + this.size);
-				ctx.lineTo(this.x + 10, this.y + this.size - 25);
-				ctx.closePath();
-				ctx.fill();
-				ctx.stroke();
-				break;
-		}
-	
-		switch(this.face) {
-			case 1:
-				ctx.beginPath();
-				ctx.lineWidth = 2;
-				ctx.arc(this.x+this.size/2,this.y+this.size/2,10,0,Math.PI*2,true);
-				ctx.closePath();
-				ctx.stroke();
-				break;
-			case 2:
-				ctx.strokeRect(this.x+this.size/2-8, this.y+this.size/2-8, 16, 16);
-				break;
-			case 3:
-				ctx.beginPath();
-				ctx.arc(this.x+this.size/2-4,this.y+this.size/2,2,0,Math.PI*2,true);
-				ctx.closePath();
-				ctx.stroke();
-				ctx.beginPath();
-				ctx.arc(this.x+this.size/2,this.y+this.size/2,2,0,Math.PI*2,true);
-				ctx.closePath();
-				ctx.stroke();
-				ctx.beginPath();
-				ctx.arc(this.x+this.size/2+4,this.y+this.size/2,2,0,Math.PI*2,true);
-				ctx.closePath();
-				ctx.stroke();
-				break;
-		}
+		ctx.drawImage(ss, 80 * this.animation[this.currentFrame], 240, this.spriteSize, this.spriteSize, xy, xy, this.spriteSize, this.spriteSize);
+		ctx.drawImage(ss, 80 * this.leftShoulder, 0, this.spriteSize, this.spriteSize, xy, xy, this.spriteSize, this.spriteSize);
+		ctx.drawImage(ss, 80 * this.rightShoulder, 80, this.spriteSize, this.spriteSize, xy, xy, this.spriteSize, this.spriteSize);
+		ctx.drawImage(ss, 80 * this.head, 160, this.spriteSize, this.spriteSize, xy, xy, this.spriteSize, this.spriteSize);
 		
-		// ctx.restore();
+		ctx.restore();
 	}
 
 	this.collide = function(entity) {
@@ -205,7 +166,6 @@ function Human() {
 	Entity.apply(this, arguments); // pass constructor arguments to parent
 	
 	this.hp = 100;
-	this.size = 64;
 	
 	this.speed = 3;
 }
@@ -217,7 +177,6 @@ function Clone() {
 	Entity.apply(this, arguments); // pass constructor arguments to parent
 
 	this.hp = 100;
-	this.size = 64;
 	
 	this.speed = 4;
 	
@@ -229,7 +188,7 @@ function Clone() {
 		if (Math.random() > 0.999) {
 			var velX = this.velocity.x * -1;
 			var velY = this.velocity.y * -1;
-			Game.spawnEntity(Clone, this.x, this.y, velX, velY, this.shape, this.color, this.face);
+			Game.spawnEntity(Clone, this.x, this.y, velX, velY, this.head, this.leftShoulder, this.rightShoulder);
 			Game.clones++;
 			score.innerHTML = Game.clones;
 		}					
@@ -266,6 +225,9 @@ var gradientIncrease = 0.001;
 
 var score;
 
+var ss = new Image();
+ss.src = "spritesheet.png";
+
 function init() {
 
 	canvas = document.getElementById('canvas');
@@ -279,18 +241,10 @@ function init() {
 	
 	score.innerHTML = Game.clones;
 	
-	var colors = new Array();
-	colors[0] = "#6FBF4D";
-	colors[1] = "#79BD9A";
-	colors[2] = "#0B486B";
-	colors[3] = "#EDC951";
-	colors[4] = "#CC333F";
-	colors[5] = "#6A4A3C";
-	
 	for (var i=0; i<28; i++) {
 	
-		var x = randomFromTo(0, 928);
-		var y = randomFromTo(0, 608);
+		var x = randomFromTo(0, 880);
+		var y = randomFromTo(0, 560);
 		
 		do {
 			var velX = randomFromTo(-1, 1);
@@ -299,12 +253,13 @@ function init() {
 		
 		var duplicate;
 		
-		do {
-			var shape = randomFromTo(1, 4);
-			var color = randomFromTo(0, 5);
-			var face = randomFromTo(1, 2);
+		do {			
+			var head = randomFromTo(0, 6);
+			var leftShoulder = randomFromTo(0, 6);
+			var rightShoulder = randomFromTo(0, 6);
+				
 			for (i=0; i<Game.entities.length; i++) {
-				if (Game.entities[i].shape == shape && Game.entities[i].color == colors[color] && Game.entities[i].face == face) {
+				if (Game.entities[i].head == head && Game.entities[i].leftShoulder == leftShoulder && Game.entities[i].rightShoulder == rightShoulder) {
 					duplicate = true;
 					break;
 				} else {
@@ -312,10 +267,11 @@ function init() {
 				}
 			}
 		} while (duplicate);
+		
 		if (i<Game.clones) {
-			Game.spawnEntity(Clone, x, y, velX, velY, shape, colors[color], face);
+			Game.spawnEntity(Clone, x, y, velX, velY, head, leftShoulder, rightShoulder);
 		} else {
-			Game.spawnEntity(Human, x, y, velX, velY, shape, colors[color], face);
+			Game.spawnEntity(Human, x, y, velX, velY, head, leftShoulder, rightShoulder);
 		}
 	}
 	
@@ -381,6 +337,10 @@ function update() {
 }
 
 function render() {
+	/* var thisFrame = new Date().getTime();
+	var dt = (thisFrame - this.lastFrame)/1000;
+	this.lastFrame = thisFrame; */
+	
 	for (x in Game.entities) {
 		Game.entities[x].draw();
 	}

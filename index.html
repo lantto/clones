@@ -4,11 +4,15 @@
 	<title>Clones</title>
 		<style>
 			canvas { border:1px solid #000; }
+			#wrapper { width: 960px; margin: 0 auto; }
+			#clones { font: bold 16px Arial; text-align: center; }
 		</style>
 </head>
 <body>
-	<canvas id="canvas" width="960" height="640"></canvas>
-	<div id="score"></div>
-	<script src="clones.js"></script>
+	<div id="wrapper">
+		<canvas id="canvas" width="960" height="640"></canvas>
+		<div id="clones">Clones: <span id="score"></span></div>
+		<script src="clones.js"></script>
+	</div>
 </body>
 </html>
