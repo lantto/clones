@@ -31,6 +31,7 @@ Game = {
 	entities: new Array(),
 	area: {width: 0, height: 0},
 	clones: 0,
+	humans: 0,
 	
 	overlay: {opacity: 0, color: '#000'},
 	
@@ -168,6 +169,12 @@ function Human() {
 	this.hp = 100;
 	
 	this.speed = 3;
+	
+	this.kill = function(slow) {
+		Game.humans--;
+		humans.innerHTML = Game.humans;
+		Entity.prototype.kill.call(this);
+	}
 }
 
 Human.prototype = new Entity;
@@ -190,7 +197,7 @@ function Clone() {
 			var velY = this.velocity.y * -1;
 			Game.spawnEntity(Clone, this.x, this.y, velX, velY, this.head, this.leftShoulder, this.rightShoulder);
 			Game.clones++;
-			score.innerHTML = Game.clones;
+			clones.innerHTML = Game.clones;
 		}					
 		Entity.prototype.update.call(this);
 	}
@@ -208,7 +215,7 @@ function Clone() {
 	
 	this.kill = function(slow) {
 		Game.clones--;
-		score.innerHTML = Game.clones;
+		clones.innerHTML = Game.clones;
 		Entity.prototype.kill.call(this);
 	}
 }
@@ -223,7 +230,8 @@ var ctx;
 var gradientSpan = 0;
 var gradientIncrease = 0.001;
 
-var score;
+var clones;
+var humans;
 
 var ss = new Image();
 ss.src = "spritesheet.png";
@@ -233,15 +241,18 @@ function init() {
 	canvas = document.getElementById('canvas');
 	ctx = canvas.getContext('2d');
 	
-	score =  document.getElementById('score');
+	clones =  document.getElementById('clones');
+	humans =  document.getElementById('humans');
 	
 	Game.area.width = canvas.width;
 	Game.area.height = canvas.height;
 	Game.clones = 3;
+	Game.humans = 25;
 	
-	score.innerHTML = Game.clones;
+	clones.innerHTML = Game.clones;
+	humans.innerHTML = Game.humans;
 	
-	for (var i=0; i<28; i++) {
+	for (var i=0; i<Game.clones + Game.humans; i++) {
 	
 		var x = randomFromTo(0, 880);
 		var y = randomFromTo(0, 560);
@@ -280,7 +291,7 @@ function init() {
 		canvasX = coords.x;
 		canvasY = coords.y;
 		for (i=Game.entities.length-1; i>=0; i--) {
-			if ((coords.x >= Game.entities[i].x && coords.x <= Game.entities[i].x + Game.entities[i].size) && (coords.y >= Game.entities[i].y && coords.y <= Game.entities[i].y + Game.entities[i].size)) {
+			if ((coords.x >= Game.entities[i].x && coords.x <= Game.entities[i].x + Game.entities[i].spriteSize) && (coords.y >= Game.entities[i].y && coords.y <= Game.entities[i].y + Game.entities[i].spriteSize)) {
 				Game.entities[i].kill();
 				if (Game.entities[i] instanceof Human) {
 					Game.overlay.color = 'red';
