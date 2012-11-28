@@ -35,8 +35,8 @@ Game = {
 	
 	overlay: {opacity: 0, color: '#000'},
 	
-	spawnEntity: function(type, x, y, velX, velY, head, leftShoulder, rightShoulder) {
-		var entity = new type(x, y, velX, velY, head, leftShoulder, rightShoulder);
+	spawnEntity: function(type, x, y, velX, velY, head, leftShoulder, rightShoulder, currentFrame, ticker) {
+		var entity = new type(x, y, velX, velY, head, leftShoulder, rightShoulder, currentFrame, ticker);
 		this.entities.push(entity);
 		return entity;
 	},
@@ -59,7 +59,7 @@ Game = {
 	}
 }
 
-function Entity(x, y, velX, velY, head, leftShoulder, rightShoulder) {
+function Entity(x, y, velX, velY, head, leftShoulder, rightShoulder, currentFrame, ticker) {
 
 	this.x = x;
 	this.y = y;
@@ -76,12 +76,16 @@ function Entity(x, y, velX, velY, head, leftShoulder, rightShoulder) {
 	
 	this.velocity = {x: velX, y: velY};
 	
+	this.speed = Math.abs(this.velocity.x) + Math.abs(this.velocity.y);
+	
 	/* this.timeBetweenFrames = 1/fps;
 	this.timeSinceLastFrame = this.timeBetweenFrames; */
 	
 	this.animation = [0, 1, 2, 1, 0, 3, 4, 3];
-	this.ticker = 0;
-	this.currentFrame = 0;
+	this.ticker = ticker;
+	
+	this.nextFrame = 4 / this.speed + 3; 
+	this.currentFrame = currentFrame;
 	
 	this.angle = 0;
 	
@@ -89,7 +93,7 @@ function Entity(x, y, velX, velY, head, leftShoulder, rightShoulder) {
 		
 		// ctx.save();
 		this.ticker++;
-		if (this.ticker > 5) {
+		if (this.ticker > this.nextFrame) {
 			this.currentFrame++;
 			this.ticker = 0;
 			if (this.currentFrame >= this.animation.length) {
@@ -171,6 +175,7 @@ function Human() {
 	this.speed = 3;
 	
 	this.kill = function(slow) {
+		deathSound.play();
 		Game.humans--;
 		humans.innerHTML = Game.humans;
 		Entity.prototype.kill.call(this);
@@ -195,7 +200,7 @@ function Clone() {
 		if (Math.random() > 0.999) {
 			var velX = this.velocity.x * -1;
 			var velY = this.velocity.y * -1;
-			Game.spawnEntity(Clone, this.x, this.y, velX, velY, this.head, this.leftShoulder, this.rightShoulder);
+			Game.spawnEntity(Clone, this.x, this.y, velX, velY, this.head, this.leftShoulder, this.rightShoulder, this.currentFrame, this.ticker);
 			Game.clones++;
 			clones.innerHTML = Game.clones;
 		}					
@@ -236,6 +241,14 @@ var humans;
 var ss = new Image();
 ss.src = "spritesheet.png";
 
+var music = new Audio("clones.mp3");
+music.addEventListener('ended', function() {
+    this.currentTime = 0;
+    this.play();
+}, false);
+
+var deathSound = new Audio("death.mp3");
+
 function init() {
 
 	canvas = document.getElementById('canvas');
@@ -257,9 +270,13 @@ function init() {
 		var x = randomFromTo(0, 880);
 		var y = randomFromTo(0, 560);
 		
+		var currentFrame = randomFromTo(-1, 6);
+		
 		do {
-			var velX = randomFromTo(-1, 1);
-			var velY = randomFromTo(-1, 1);
+			var velX = randomFromTo(-100, 100);
+			var velY = randomFromTo(-100, 100);
+			velX /= 100;
+			velY /= 100;
 		} while(velX == 0 || velY == 0);
 		
 		var duplicate;
@@ -280,9 +297,9 @@ function init() {
 		} while (duplicate);
 		
 		if (i<Game.clones) {
-			Game.spawnEntity(Clone, x, y, velX, velY, head, leftShoulder, rightShoulder);
+			Game.spawnEntity(Clone, x, y, velX, velY, head, leftShoulder, rightShoulder, currentFrame, 0);
 		} else {
-			Game.spawnEntity(Human, x, y, velX, velY, head, leftShoulder, rightShoulder);
+			Game.spawnEntity(Human, x, y, velX, velY, head, leftShoulder, rightShoulder, currentFrame, 0);
 		}
 	}
 	
@@ -304,6 +321,8 @@ function init() {
     }, false);
 
 	setInterval(main, 1000 / fps);
+	
+	music.play();
 
 }
 
