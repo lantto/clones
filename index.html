@@ -3,17 +3,43 @@
 <head>
 	<title>Clones</title>
 		<style>
+			@font-face { font-family: wtpe; src: url('wtpe.ttf') }
+			body { font-family: arial, sans-serif; color: #eee; }
 			canvas { border:1px solid #000; }
-			#wrapper { width: 960px; margin: 0 auto; }
-			#score { font: bold 16px Arial; text-align: center; }
+			canvas:hover { cursor: crosshair; }
+			button { background-color:#36a623; width: 100px; heigh: 40px; font-size: 20px; font-weight: bold; border:1px solid #fff; }
+			button span { text-shadow: 0 0 6px #fff; }
+			button:hover { box-shadow: 0 0 20px #fff;}
+			button:hover span { text-shadow: 0 0 10px #fff; }
+			.left { float: left; }
+			.right { float: right; }
+			.clear { clear: both; }
+			h1 { font-family: wtpe, sans-serif; font-size: 50px; font-weight: bold; color: #39d51f; }
+			#wrapper { width: 960px; margin: 0 auto; position: relative; }
+			#overlay { position:absolute; top:160px; left:230px; width: 500px; text-align: center; cursor: crosshair; }
+			#play { cursor: pointer; }
+			#score { color: #000; position:absolute; top: 20px; left: 20px; font: bold 16px Arial; display: none; width: 100px; cursor: crosshair; -moz-user-select: -moz-none; -khtml-user-select: none; -webkit-user-select: none; -ms-user-select: none; user-select: none; }
+			#score p { margin: 0; }
+			#clones { color: red; }
+			#humans { color: green; }
 		</style>
 </head>
 <body>
 	<div id="wrapper">
 		<canvas id="canvas" width="960" height="640"></canvas>
-		<div id="score">
-			<p>Clones: <span id="clones"></span></p>
-			<p>Humans: <span id="humans"></span></p>
+		<div id="overlay">
+			<h1>Clones? CLONES!</h1>
+			<p>Instructions:</p>
+			<p>Find the clones and kill them before they kill the humans!</p>
+			<p>Good luck!</p>
+			<button type="button" id="play"><span>GO!</span></button>
+		</div>
+		<div id="score" onfocus="this.blur()">
+			<p class="left" onfocus="this.blur()">Clones:</p>
+			<p class="right"><span id="clones"></span></p>
+			<div class="clear"></div>
+			<p class="left">Humans:</p>
+			<p class="right"><span id="humans"></span></p>
 		</div>
 		<script src="clones.js"></script>
 	</div>

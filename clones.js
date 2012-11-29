@@ -241,8 +241,9 @@ var humans;
 var ss = new Image();
 ss.src = "spritesheet.png";
 
-var music = new Audio("clones.mp3");
-music.addEventListener('ended', function() {
+var introMusic = new Audio("intro.mp3");
+var levelMusic = new Audio("level.mp3");
+levelMusic.addEventListener('ended', function() {
     this.currentTime = 0;
     this.play();
 }, false);
@@ -254,8 +255,13 @@ function init() {
 	canvas = document.getElementById('canvas');
 	ctx = canvas.getContext('2d');
 	
+	ctx.fillStyle = '#000';
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	
 	clones =  document.getElementById('clones');
 	humans =  document.getElementById('humans');
+	
+	play =  document.getElementById('play');
 	
 	Game.area.width = canvas.width;
 	Game.area.height = canvas.height;
@@ -265,64 +271,14 @@ function init() {
 	clones.innerHTML = Game.clones;
 	humans.innerHTML = Game.humans;
 	
-	for (var i=0; i<Game.clones + Game.humans; i++) {
+	introMusic.play();
 	
-		var x = randomFromTo(0, 880);
-		var y = randomFromTo(0, 560);
-		
-		var currentFrame = randomFromTo(-1, 6);
-		
-		do {
-			var velX = randomFromTo(-100, 100);
-			var velY = randomFromTo(-100, 100);
-			velX /= 100;
-			velY /= 100;
-		} while(velX == 0 || velY == 0);
-		
-		var duplicate;
-		
-		do {			
-			var head = randomFromTo(0, 6);
-			var leftShoulder = randomFromTo(0, 6);
-			var rightShoulder = randomFromTo(0, 6);
-				
-			for (i=0; i<Game.entities.length; i++) {
-				if (Game.entities[i].head == head && Game.entities[i].leftShoulder == leftShoulder && Game.entities[i].rightShoulder == rightShoulder) {
-					duplicate = true;
-					break;
-				} else {
-					duplicate = false;
-				}
-			}
-		} while (duplicate);
-		
-		if (i<Game.clones) {
-			Game.spawnEntity(Clone, x, y, velX, velY, head, leftShoulder, rightShoulder, currentFrame, 0);
-		} else {
-			Game.spawnEntity(Human, x, y, velX, velY, head, leftShoulder, rightShoulder, currentFrame, 0);
-		}
-	}
-	
-    canvas.addEventListener('click', function(e) {
-		coords = canvas.relMouseCoords(e);
-		canvasX = coords.x;
-		canvasY = coords.y;
-		for (i=Game.entities.length-1; i>=0; i--) {
-			if ((coords.x >= Game.entities[i].x && coords.x <= Game.entities[i].x + Game.entities[i].spriteSize) && (coords.y >= Game.entities[i].y && coords.y <= Game.entities[i].y + Game.entities[i].spriteSize)) {
-				Game.entities[i].kill();
-				if (Game.entities[i] instanceof Human) {
-					Game.overlay.color = 'red';
-					Game.overlay.opacity = 1;
-				}
-				
-				break;
-			}
-		}
-    }, false);
-
-	setInterval(main, 1000 / fps);
-	
-	music.play();
+	play.addEventListener('click', function(e) {
+		loadLevel(1);
+		document.getElementById('overlay').style.display = 'none';
+		document.getElementById('score').style.display = 'block';
+		introMusic.pause();
+	}, false);
 
 }
 
@@ -374,6 +330,73 @@ function render() {
 	for (x in Game.entities) {
 		Game.entities[x].draw();
 	}
+}
+
+function loadLevel(level) {
+
+	switch (level) {
+		case 1:
+		for (var i=0; i<Game.clones + Game.humans; i++) {
+		
+			var x = randomFromTo(0, 880);
+			var y = randomFromTo(0, 560);
+			
+			var currentFrame = randomFromTo(-1, 6);
+			
+			do {
+				var velX = randomFromTo(-100, 100);
+				var velY = randomFromTo(-100, 100);
+				velX /= 100;
+				velY /= 100;
+			} while(velX == 0 || velY == 0);
+			
+			var duplicate;
+			
+			do {			
+				var head = randomFromTo(0, 6);
+				var leftShoulder = randomFromTo(0, 6);
+				var rightShoulder = randomFromTo(0, 6);
+					
+				for (i=0; i<Game.entities.length; i++) {
+					if (Game.entities[i].head == head && Game.entities[i].leftShoulder == leftShoulder && Game.entities[i].rightShoulder == rightShoulder) {
+						duplicate = true;
+						break;
+					} else {
+						duplicate = false;
+					}
+				}
+			} while (duplicate);
+			
+			if (i<Game.clones) {
+				Game.spawnEntity(Clone, x, y, velX, velY, head, leftShoulder, rightShoulder, currentFrame, 0);
+			} else {
+				Game.spawnEntity(Human, x, y, velX, velY, head, leftShoulder, rightShoulder, currentFrame, 0);
+			}
+		}
+		
+		canvas.addEventListener('click', function(e) {
+			coords = canvas.relMouseCoords(e);
+			canvasX = coords.x;
+			canvasY = coords.y;
+			for (i=Game.entities.length-1; i>=0; i--) {
+				if ((coords.x >= Game.entities[i].x && coords.x <= Game.entities[i].x + Game.entities[i].spriteSize) && (coords.y >= Game.entities[i].y && coords.y <= Game.entities[i].y + Game.entities[i].spriteSize)) {
+					Game.entities[i].kill();
+					if (Game.entities[i] instanceof Human) {
+						Game.overlay.color = 'red';
+						Game.overlay.opacity = 1;
+					}
+					
+					break;
+				}
+			}
+		}, false);
+
+		setInterval(main, 1000 / fps);
+		
+		levelMusic.play();
+		break;
+	}
+
 }
 
 // GO!
