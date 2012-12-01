@@ -503,6 +503,8 @@ function render() {
 
 function loadLevel(level) {
 
+	clearInterval(mainLoop);
+
 	Game.tip.duration = 0;
 	Game.tip.message = null;
 
