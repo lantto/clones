@@ -214,14 +214,14 @@ function Clone() {
 	this.speed = 4;
 	
 	this.framesSinceLastClone = 0;
-	this.cloneTime = randomFromTo(1500, 2500);
+	this.cloneTime = randomFromTo(1500, 2000);
 	
 	this.update = function () {
 		if (Math.random() > 0.995) {
 			this.checkCollisions();
 		}	
 		
-		this.cloneTime++;
+		this.framesSinceLastClone++;
 
 		if (Math.random() > 0.999 || this.framesSinceLastClone > this.cloneTime) {
 			this.framesSinceLastClone = 0;
@@ -566,13 +566,13 @@ function loadLevel(level) {
 		case 9:
 			Game.gradient = Game.colors[randomFromTo(0, Game.colors.length-1)];
 			Game.clones = 4;
-			Game.humans = 60;
+			Game.humans = 30;
 			Game.sameShoulders = false;
 			break;
 		default:
 			Game.gradient = Game.colors[randomFromTo(0, Game.colors.length-1)];
 			Game.clones = Game.level - 6;
-			Game.humans = Game.level * 4;
+			Game.humans = Game.level * 5;
 			Game.sameShoulders = false;
 	}
 	
