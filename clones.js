@@ -328,8 +328,9 @@ function init() {
 	document.getElementById('restart').addEventListener('click', function(e) {
 		document.getElementById('game-over').style.display = 'none';
 		Game.overlay.opacity = 0;
+		Game.level = 1;
 		document.getElementById('level').innerHTML = '<p>Level: ' + Game.level + '</p>'
-		loadLevel(1);
+		loadLevel(Game.level);
 		document.getElementById('score').style.display = 'block';
 		Game.over = false;
 		levelMusic.currentTime = 0;
