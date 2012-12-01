@@ -4,42 +4,75 @@
 	<title>Clones</title>
 		<style>
 			@font-face { font-family: wtpe; src: url('wtpe.ttf') }
-			body { font-family: arial, sans-serif; color: #eee; }
+			@-webkit-keyframes rotate { from { -webkit-transform: rotate(0deg); } to { -webkit-transform: rotate(360deg); } }
+			body { font-family: arial, sans-serif; color: #eee; background-color: #0F0F0F; }
 			canvas { border:1px solid #000; }
 			canvas:hover { cursor: crosshair; }
-			button { background-color:#36a623; width: 100px; heigh: 40px; font-size: 20px; font-weight: bold; border:1px solid #fff; }
-			button span { text-shadow: 0 0 6px #fff; }
-			button:hover { box-shadow: 0 0 20px #fff;}
-			button:hover span { text-shadow: 0 0 10px #fff; }
+			button#play { cursor: pointer; background-color:#46a600; width: 100px; height: 40px; font-size: 20px; font-weight: bold; border:1px solid #fff; margin-top: 20px; }
+			button#play span { text-shadow: 0 0 6px #fff; }
+			button#play:hover { box-shadow: 0 0 20px #fff;}
+			button#play:hover span { text-shadow: 0 0 10px #fff; }
+			h1 { font-family: wtpe, sans-serif; font-size: 50px; font-weight: bold; color: #39d51f; text-shadow: 0 0 100px #fff; }
+			h1 span { color: #fff; }
+			h2 { font-weight: bold; color: red; margin-bottom: 4px; }
+			ol { text-align: left; width: 260px; margin: 0 auto; border: 1px dashed; padding: 20px 40px;}
 			.left { float: left; }
 			.right { float: right; }
 			.clear { clear: both; }
-			h1 { font-family: wtpe, sans-serif; font-size: 50px; font-weight: bold; color: #39d51f; }
 			#wrapper { width: 960px; margin: 0 auto; position: relative; }
-			#overlay { position:absolute; top:160px; left:230px; width: 500px; text-align: center; cursor: crosshair; }
-			#play { cursor: pointer; }
+			#overlay { position:absolute; top:80px; left:230px; width: 500px; text-align: center; cursor: crosshair; text-shadow: 0 0 10px #888; display: none; }
+			#loading { color: #000; font-family: wtpe, sans-serif; font-size: 1px; position:absolute; top:270px; left:430px; border: 1px solid #39d51f; border-right: 0; border-bottom: 0; -webkit-border-radius: 100px; height: 100px; width: 100px; -webkit-transition: all 0.5s ease-in; -webkit-animation-name: rotate; -webkit-animation-duration: 1.0s; -webkit-animation-iteration-count: infinite; -webkit-animation-timing-function: linear; }
+			#game-over { color: #fff; font-family: wtpe, sans-serif; font-size: 40px; position:absolute; top:237px; left:383px; display:none; }
+			button#restart { color: #fff; margin: 0 auto; display: block; cursor: pointer; background-color:#000; height: 40px; font-size: 20px; font-weight: bold; border:1px solid #fff; }
+			button#restart:hover { box-shadow: 0 0 20px green; }
+			#tip { color: #000; position: absolute; bottom: 10px; left: 20px; display: none; text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white; cursor: crosshair; -moz-user-select: -moz-none; -khtml-user-select: none; -webkit-user-select: none; -ms-user-select: none; user-select: none; }
+			#victory { color: #000; font-family: wtpe, sans-serif; font-size: 40px; position:absolute; top:237px; left:405px; display:none; }
+			button#next-level { margin: 0 auto; display: block; cursor: pointer; background-color:#fff; height: 40px; font-size: 20px; font-weight: bold; border:1px solid #000; }
+			button#next-level:hover { box-shadow: 0 0 20px green;}
 			#score { color: #000; position:absolute; top: 20px; left: 20px; font: bold 16px Arial; display: none; width: 100px; cursor: crosshair; -moz-user-select: -moz-none; -khtml-user-select: none; -webkit-user-select: none; -ms-user-select: none; user-select: none; }
-			#score p { margin: 0; }
+			#score p { color: black; margin: 0; }
+			#score p span { text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; }
+			#level { color: #000; position:absolute; top: 20px; right: 20px; font: bold 16px Arial; display: none; cursor: crosshair; -moz-user-select: -moz-none; -khtml-user-select: none; -webkit-user-select: none; -ms-user-select: none; user-select: none; }
+			#level p { color: black; margin: 0; }
 			#clones { color: red; }
-			#humans { color: green; }
+			#humans { color: #39d51f; }
+		
 		</style>
 </head>
 <body>
 	<div id="wrapper">
 		<canvas id="canvas" width="960" height="640"></canvas>
 		<div id="overlay">
-			<h1>Clones? CLONES!</h1>
-			<p>Instructions:</p>
-			<p>Find the clones and kill them before they kill the humans!</p>
-			<p>Good luck!</p>
+			<h1><span>Clones?</span> CLONES!</h1>
+			<p>What?!</p>
+			<p>Homicidal clones have infiltrated Earth and it's your job to get rid of them.</p>
+			<h2>Mission:</h2>
+			<ol>
+				<li>Find the clones.</li>
+				<li>Kill them!</li>
+			</ol>
+			<p>Game ends when either all clones or all humans are dead. You decide!</p>
 			<button type="button" id="play"><span>GO!</span></button>
 		</div>
-		<div id="score" onfocus="this.blur()">
+		<div id="loading">C</div>
+		<div id="game-over">
+			<p>GAME OVER</p>
+			<button id="restart">Retry</button>
+		</div>
+		<div id="victory">
+			<p>Well done!</p>
+			<button id="next-level">Next level</button>
+		</div>
+		<div id="tip"></div>
+		<div id="score">
 			<p class="left" onfocus="this.blur()">Clones:</p>
 			<p class="right"><span id="clones"></span></p>
 			<div class="clear"></div>
 			<p class="left">Humans:</p>
 			<p class="right"><span id="humans"></span></p>
+		</div>
+		<div id="level">
+			<p>Level: 1</p>
 		</div>
 		<script src="clones.js"></script>
 	</div>
